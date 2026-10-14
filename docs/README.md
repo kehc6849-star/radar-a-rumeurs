@@ -14,6 +14,7 @@ Cette documentation est **vivante** : elle est mise à jour à chaque étape du 
 | 08 | [Checklist de soumission](08_SUBMISSION_CHECKLIST.md) | ne rien oublier pour le hackathon |
 | 09 | [Journal des décisions](09_DECISIONS_LOG.md) | comprendre pourquoi nous avons choisi ceci |
 | 10 | [Travail en équipe](10_TEAM_WORKFLOW.md) | savoir comment collaborer sur le dépôt |
+| 11 | [Quotas et limites de l'IA](11_AI_QUOTAS_AND_LIMITS.md) | gérer les limites du compte Gemma et préparer la démo |
 
 ## Règle de mise à jour
 

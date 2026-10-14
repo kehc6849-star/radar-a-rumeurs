@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../domain/models/analysis_source.dart';
 import '../../domain/models/analysis_verdict.dart';
 import '../../domain/models/detected_signal.dart';
 import '../widgets/detected_signal_tile.dart';
@@ -16,9 +17,18 @@ class VerdictScreen extends StatelessWidget {
       'Cette analyse est une estimation automatique, pas une preuve. '
       'En cas de doute, vérifiez toujours auprès de la source officielle.';
 
+  String _buildSourceLabel() {
+    if (verdict.source == AnalysisSource.hybrid) {
+      return 'Analyse : règles locales + IA (${verdict.aiModelName ?? 'IA'})';
+    }
+
+    return 'Analyse : règles locales (sur votre téléphone)';
+  }
+
   @override
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
+    final String? notice = verdict.notice;
 
     return Scaffold(
       appBar: AppBar(title: const Text("Résultat de l'analyse")),
@@ -27,6 +37,17 @@ class VerdictScreen extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           children: <Widget>[
             VerdictHeaderCard(verdict: verdict),
+            const SizedBox(height: 8),
+            Text(_buildSourceLabel(), style: textTheme.bodySmall),
+            if (notice != null) ...<Widget>[
+              const SizedBox(height: 12),
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.cloud_off_outlined),
+                  title: Text(notice),
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             Text(verdict.summary, style: textTheme.bodyLarge),
             if (verdict.signals.isNotEmpty) ...<Widget>[

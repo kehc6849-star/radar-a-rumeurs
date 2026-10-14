@@ -1,3 +1,4 @@
+import 'analysis_source.dart';
 import 'detected_signal.dart';
 import 'verdict_level.dart';
 
@@ -10,6 +11,9 @@ class AnalysisVerdict {
     required this.summary,
     required List<String> recommendedActions,
     required this.analyzedAt,
+    this.source = AnalysisSource.localRules,
+    this.aiModelName,
+    this.notice,
   })  : signals = List<DetectedSignal>.unmodifiable(signals),
         recommendedActions = List<String>.unmodifiable(recommendedActions);
 
@@ -22,4 +26,25 @@ class AnalysisVerdict {
   final String summary;
   final List<String> recommendedActions;
   final DateTime analyzedAt;
+  final AnalysisSource source;
+
+  /// Name of the AI model, when the AI took part in the verdict.
+  final String? aiModelName;
+
+  /// A message for the user, for example when the AI could not be reached.
+  final String? notice;
+
+  AnalysisVerdict withNotice(String noticeText) {
+    return AnalysisVerdict(
+      level: level,
+      riskScore: riskScore,
+      signals: signals,
+      summary: summary,
+      recommendedActions: recommendedActions,
+      analyzedAt: analyzedAt,
+      source: source,
+      aiModelName: aiModelName,
+      notice: noticeText,
+    );
+  }
 }
