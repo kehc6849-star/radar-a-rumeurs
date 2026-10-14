@@ -2,7 +2,7 @@
 
 > **English summary** — Radar à Rumeurs is an open source Flutter app that helps people in Senegal and West Africa spot scams (mobile money, fake scholarships, phishing) and rumors before they act or share. Paste a message, get a clear verdict, the warning signs found, and what to do next. Released under the MIT licence.
 
-Application mobile **open source** (Flutter) qui aide à repérer les **arnaques** (mobile money, fausses bourses, phishing) et les **rumeurs** avant d'agir ou de partager.
+Application mobile **open source** (Flutter, IA Gemma 4) qui aide à repérer les **arnaques** (mobile money, fausses bourses, phishing) et les **rumeurs** avant d'agir ou de partager.
 
 Projet réalisé pour le **Open Source × AI Hackathon 2026** (Galsen DEV × Hacktoberfest Hack Day Dakar) — track *Civic Tech & services publics*.
 
@@ -18,23 +18,24 @@ L'utilisateur colle un message. L'application renvoie :
 - les **signaux repérés**, expliqués simplement ;
 - **que faire maintenant**, selon le type de menace.
 
-Le texte analysé n'est ni stocké, ni envoyé, ni journalisé dans la version actuelle.
+Sans l'IA, le texte reste sur le téléphone. Avec l'IA (facultative, après accord de l'utilisateur), il est envoyé à notre serveur puis à **Gemma 4** ; notre serveur ne le conserve pas. L'historique ne garde que les résultats.
 
 ## État d'avancement
 
 | Fonctionnalité | État |
 |---|---|
 | Analyse de texte collé par règles locales, hors-ligne | ✅ Disponible |
-| Analyse de captures d'écran (lecture par IA) | 🔜 Prévu |
-| Analyse de vocaux (transcription par IA) | 🔜 Prévu |
-| Analyse du sens et explication par modèle de langage | 🔜 Prévu |
+| Analyse de captures d'écran (lecture par IA, Gemma 4) | ✅ Disponible |
+| Analyse du sens par IA (Gemma 4) avec repli hors-ligne | ✅ Disponible |
+| Historique local (sans le contenu analysé) | ✅ Disponible |
+| Analyse de vocaux (transcription) | 🔜 Prévu |
 | Partage direct depuis WhatsApp, historique local | 🔜 Prévu |
 
 Le détail est dans la [feuille de route](docs/07_ROADMAP.md) et le [journal des modifications](CHANGELOG.md).
 
 ## Installation rapide
 
-Prérequis : Flutter stable récent (3.27 ou plus) et Android Studio.
+Prérequis : Flutter stable récent (3.27 ou plus) et Android Studio. Pour l'analyse par IA : Python 3.12 et une clé Google AI Studio (voir le [guide de développement](docs/06_DEVELOPMENT_GUIDE.md)).
 
 ```bash
 git clone <url-du-depot>
@@ -59,6 +60,8 @@ Contrôles qualité : `flutter analyze` (zéro avertissement) et `flutter test`.
 | [07 — Feuille de route](docs/07_ROADMAP.md) | Ce qui est fait, ce qui vient |
 | [08 — Checklist de soumission](docs/08_SUBMISSION_CHECKLIST.md) | Conditions du hackathon |
 | [09 — Journal des décisions](docs/09_DECISIONS_LOG.md) | Pourquoi nous avons choisi ceci |
+| [10 — Travail en équipe](docs/10_TEAM_WORKFLOW.md) | Branches, pull requests, conventions |
+| [11 — Quotas et limites de l'IA](docs/11_AI_QUOTAS_AND_LIMITS.md) | Gérer les limites de Gemma, préparer la démo |
 | [Contribuer](CONTRIBUTING.md) | Ajouter une règle, proposer une amélioration |
 | [Sécurité](SECURITY.md) | Signaler une vulnérabilité |
 

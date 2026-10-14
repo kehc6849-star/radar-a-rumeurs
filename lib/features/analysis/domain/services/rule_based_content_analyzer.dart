@@ -9,6 +9,7 @@ import 'content_validator.dart';
 import 'risk_assessment_policy.dart';
 import 'safety_advice_catalog.dart';
 import 'text_normalizer.dart';
+import 'verdict_summary_catalog.dart';
 
 /// Analysis engine that runs entirely on the phone with local rules.
 ///
@@ -53,20 +54,9 @@ class RuleBasedContentAnalyzer implements ContentAnalyzer {
       level: verdictLevel,
       riskScore: riskScore,
       signals: detectedSignals,
-      summary: _buildSummary(verdictLevel),
+      summary: VerdictSummaryCatalog.buildSummary(verdictLevel),
       recommendedActions: SafetyAdviceCatalog.buildAdvice(orderedFamilies),
       analyzedAt: DateTime.now(),
     );
-  }
-
-  String _buildSummary(VerdictLevel verdictLevel) {
-    return switch (verdictLevel) {
-      VerdictLevel.dangerous =>
-        "Ce message réunit plusieurs caractéristiques typiques d'une arnaque. Ne répondez pas et ne cliquez sur aucun lien.",
-      VerdictLevel.suspicious =>
-        "Ce message contient des éléments inhabituels. Vérifiez par un canal officiel avant d'agir.",
-      VerdictLevel.noSignalFound =>
-        "Aucun signal d'arnaque connu n'a été détecté. Cela ne garantit pas que le message soit fiable : en cas de doute, vérifiez la source.",
-    };
   }
 }
