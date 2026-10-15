@@ -4,6 +4,9 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Les
 
 ## [Non publié]
 
+### Ajouté
+- Tests unitaires de la comparaison des conseils (`test/advice_similarity_policy_test.dart`, 7 tests).
+
 ### Corrigé
 - Textes générés par l'IA : guillemets droits remplacés par des guillemets français « », mot anglais « Forwarded » traduit, plus de description de l'écran (« lien bleu »), conseils redondants supprimés, conseil « signalez, puis supprimez » pour ne pas perdre la preuve.
 - Conseils affichés : l'application ne montre plus deux fois le même conseil lorsque l'IA reprend, avec d'autres mots, un conseil des règles locales (comparaison des mots importants dans `advice_similarity_policy.dart`, utilisée par la fusion des verdicts).
@@ -15,6 +18,7 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Les
 
 ### Vérifié
 - Le lot 2 a été validé sur téléphone le 15 octobre 2026 : l'analyse d'un texte collé et d'une capture d'écran (message WhatsApp transféré) fonctionne de bout en bout avec Gemma 4, combinée aux règles locales. L'analyse des captures est donc fonctionnelle, contrairement à ce qu'indique le message du commit du lot 2.
+- Après les correctifs du 15 octobre : guillemets français, « transféré » et conseils sans répétition vérifiés sur téléphone ; `flutter analyze` sans problème, 68 tests Flutter et 58 tests serveur réussis.
 
 ### À venir
 - Vocaux (si l'audio est confirmé par l'API), partage depuis WhatsApp, déploiement du serveur en HTTPS pour la démonstration, choix du nom définitif de l'application, relevé des quotas du compte Gemma (voir [feuille de route](docs/07_ROADMAP.md)).
