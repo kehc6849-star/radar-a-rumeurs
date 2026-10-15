@@ -2,6 +2,10 @@
 
 The model answer is never trusted as is: every field is checked, cut to a
 safe length, and unknown values are dropped.
+
+The texts shown to the user also get a small, predictable clean-up
+(French quotation marks, no screen-colour words, no repeated items), so the
+result stays consistent even when the model does not follow every style rule.
 """
 
 from __future__ import annotations
@@ -26,6 +30,32 @@ MAXIMUM_ACTION_LENGTH = 200
 MAXIMUM_EXTRACTED_TEXT_LENGTH = 1500
 
 _CODE_FENCE_PATTERN = re.compile(r"```(?:json)?", re.IGNORECASE)
+
+# A non-breaking space keeps the guillemets attached to the quoted words.
+_NON_BREAKING_SPACE = "\u00a0"
+
+# Straight single quotes: the opening quote must not follow a letter, so the
+# apostrophes of "l'offre" or "n'ouvrez" are never taken as quotation marks.
+_STRAIGHT_SINGLE_QUOTED_PATTERN = re.compile(
+    r"(?<![\w'])'((?:[^'\n]|(?<=\w)'(?=\w))+?)'(?![\w'])"
+)
+_STRAIGHT_DOUBLE_QUOTED_PATTERN = re.compile(r'"([^"\n]+?)"')
+_CURLY_DOUBLE_QUOTED_PATTERN = re.compile(r"\u201c([^\u201d\n]+?)\u201d")
+
+# Already French quotes: only fix the spacing inside them.
+_FRENCH_GUILLEMETS_PATTERN = re.compile(r"\u00ab\s*([^\u00ab\u00bb\n]+?)\s*\u00bb")
+
+_QUOTED_TEXT_PATTERNS = (
+    _STRAIGHT_SINGLE_QUOTED_PATTERN,
+    _STRAIGHT_DOUBLE_QUOTED_PATTERN,
+    _CURLY_DOUBLE_QUOTED_PATTERN,
+    _FRENCH_GUILLEMETS_PATTERN,
+)
+
+# The advice must also be true for a pasted text, where no link has a colour.
+_COLOURED_LINK_PATTERN = re.compile(r"\b(liens?)\s+bleus?\b", re.IGNORECASE)
+
+_NON_ALPHANUMERIC_PATTERN = re.compile(r"[\W_]+")
 
 
 class VerdictParsingError(Exception):
@@ -87,11 +117,49 @@ def _coerce_risk_score(value: object) -> int:
     return max(0, min(100, int(round(numeric_value))))
 
 
-def _clean_text(value: object, maximum_length: int) -> str:
+def _wrap_in_french_guillemets(match: re.Match) -> str:
+    quoted_text = match.group(1).strip()
+
+    # Guard clause: never turn an empty quotation into empty guillemets.
+    if not quoted_text:
+        return match.group(0)
+
+    return f"\u00ab{_NON_BREAKING_SPACE}{quoted_text}{_NON_BREAKING_SPACE}\u00bb"
+
+
+def _apply_french_typography(text: str) -> str:
+    typographic_text = text
+
+    for quoted_text_pattern in _QUOTED_TEXT_PATTERNS:
+        typographic_text = quoted_text_pattern.sub(_wrap_in_french_guillemets, typographic_text)
+
+    return _COLOURED_LINK_PATTERN.sub(r"\1", typographic_text)
+
+
+def _clean_text(
+    value: object,
+    maximum_length: int,
+    should_apply_french_typography: bool = True,
+) -> str:
     if not isinstance(value, str):
         return ""
 
-    return " ".join(value.split())[:maximum_length]
+    # Collapse spaces first: str.split() also removes non-breaking spaces,
+    # so the typography step must come after it.
+    single_spaced_text = " ".join(value.split())
+
+    if should_apply_french_typography:
+        single_spaced_text = _apply_french_typography(single_spaced_text)
+
+    return single_spaced_text[:maximum_length].strip()
+
+
+def _build_comparison_key(text: str) -> str:
+    # Two texts that differ only by case, punctuation or spacing
+    # are the same advice for the user, so they share one key.
+    lowercase_text = text.casefold()
+
+    return " ".join(_NON_ALPHANUMERIC_PATTERN.sub(" ", lowercase_text).split())
 
 
 def parse_ai_verdict(raw_text: str) -> AiVerdict:
@@ -105,6 +173,7 @@ def parse_ai_verdict(raw_text: str) -> AiVerdict:
     threat_family = raw_family if isinstance(raw_family, str) and raw_family in ALLOWED_THREAT_FAMILIES else None
 
     signals: list[AiSignal] = []
+    seen_signal_titles: set[str] = set()
     raw_signals = answer.get("signals")
 
     if isinstance(raw_signals, list):
@@ -118,10 +187,19 @@ def parse_ai_verdict(raw_text: str) -> AiVerdict:
             title = _clean_text(raw_signal.get("title"), MAXIMUM_TITLE_LENGTH)
             explanation = _clean_text(raw_signal.get("explanation"), MAXIMUM_EXPLANATION_LENGTH)
 
-            if title and explanation:
-                signals.append(AiSignal(title=title, explanation=explanation))
+            if not title or not explanation:
+                continue
+
+            title_key = _build_comparison_key(title)
+
+            if title_key in seen_signal_titles:
+                continue
+
+            seen_signal_titles.add(title_key)
+            signals.append(AiSignal(title=title, explanation=explanation))
 
     actions: list[str] = []
+    seen_action_keys: set[str] = set()
     raw_actions = answer.get("recommendedActions")
 
     if isinstance(raw_actions, list):
@@ -131,10 +209,23 @@ def parse_ai_verdict(raw_text: str) -> AiVerdict:
 
             action = _clean_text(raw_action, MAXIMUM_ACTION_LENGTH)
 
-            if action:
-                actions.append(action)
+            if not action:
+                continue
 
-    extracted_text = _clean_text(answer.get("extractedText"), MAXIMUM_EXTRACTED_TEXT_LENGTH)
+            action_key = _build_comparison_key(action)
+
+            if action_key in seen_action_keys:
+                continue
+
+            seen_action_keys.add(action_key)
+            actions.append(action)
+
+    # The text read from an image is kept as it is: no typography change.
+    extracted_text = _clean_text(
+        answer.get("extractedText"),
+        MAXIMUM_EXTRACTED_TEXT_LENGTH,
+        should_apply_french_typography=False,
+    )
 
     return AiVerdict(
         risk_score=risk_score,
