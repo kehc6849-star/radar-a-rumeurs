@@ -4,6 +4,7 @@ import '../models/detected_signal.dart';
 import '../models/remote_analysis_result.dart';
 import '../models/threat_family.dart';
 import '../models/verdict_level.dart';
+import 'advice_similarity_policy.dart';
 import 'risk_assessment_policy.dart';
 import 'safety_advice_catalog.dart';
 import 'verdict_summary_catalog.dart';
@@ -125,7 +126,14 @@ class VerdictFusionPolicy {
         break;
       }
 
-      if (!mergedActions.contains(aiAction)) {
+      // The AI often repeats the local advice with other words: skip it, so
+      // the user does not read the same advice twice.
+      final bool isRepeatedAdvice = AdviceSimilarityPolicy.isTooSimilar(
+        candidateAdvice: aiAction,
+        existingAdvices: mergedActions,
+      );
+
+      if (!isRepeatedAdvice) {
         mergedActions.add(aiAction);
         addedAiActionCount++;
       }

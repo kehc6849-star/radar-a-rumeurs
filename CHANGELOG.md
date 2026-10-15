@@ -6,6 +6,7 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Les
 
 ### Corrigé
 - Textes générés par l'IA : guillemets droits remplacés par des guillemets français « », mot anglais « Forwarded » traduit, plus de description de l'écran (« lien bleu »), conseils redondants supprimés, conseil « signalez, puis supprimez » pour ne pas perdre la preuve.
+- Conseils affichés : l'application ne montre plus deux fois le même conseil lorsque l'IA reprend, avec d'autres mots, un conseil des règles locales (comparaison des mots importants dans `advice_similarity_policy.dart`, utilisée par la fusion des verdicts).
 
 ### Modifié
 - Serveur : le prompt envoyé à Gemma 4 contient quatre nouvelles règles de style (`backend/app/prompts.py`), et le texte du verdict est nettoyé par le code (`backend/app/verdict_parser.py`) : guillemets français avec espaces insécables, signaux et conseils en double supprimés. Le texte lu dans une capture n'est jamais modifié.
