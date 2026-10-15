@@ -2,6 +2,22 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Les versions les plus récentes sont en haut.
 
+## [Non publié]
+
+### Corrigé
+- Textes générés par l'IA : guillemets droits remplacés par des guillemets français « », mot anglais « Forwarded » traduit, plus de description de l'écran (« lien bleu »), conseils redondants supprimés, conseil « signalez, puis supprimez » pour ne pas perdre la preuve.
+
+### Modifié
+- Serveur : le prompt envoyé à Gemma 4 contient quatre nouvelles règles de style (`backend/app/prompts.py`), et le texte du verdict est nettoyé par le code (`backend/app/verdict_parser.py`) : guillemets français avec espaces insécables, signaux et conseils en double supprimés. Le texte lu dans une capture n'est jamais modifié.
+- `.gitignore` : ajout des caches Python (`__pycache__/`, `.pytest_cache/`) et de l'environnement virtuel (`.venv/`).
+- Documentation du serveur (`backend/README.md`) : explication des variables `APP_ACCESS_TOKEN` et `ENABLE_API_DOCUMENTATION`, procédure de test sur téléphone Android par câble USB (`adb reverse`, `--dart-define`), dépannage du message « Impossible de joindre le serveur d'analyse ».
+
+### Vérifié
+- Le lot 2 a été validé sur téléphone le 15 octobre 2026 : l'analyse d'un texte collé et d'une capture d'écran (message WhatsApp transféré) fonctionne de bout en bout avec Gemma 4, combinée aux règles locales. L'analyse des captures est donc fonctionnelle, contrairement à ce qu'indique le message du commit du lot 2.
+
+### À venir
+- Vocaux (si l'audio est confirmé par l'API), partage depuis WhatsApp, déploiement du serveur en HTTPS pour la démonstration, choix du nom définitif de l'application, relevé des quotas du compte Gemma (voir [feuille de route](docs/07_ROADMAP.md)).
+
 ## [0.2.0] — Lot 2 : IA Gemma 4
 
 ### Ajouté
@@ -15,11 +31,6 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Les
 
 ### Modifié
 - Le verdict indique désormais quels moteurs ont produit le résultat et affiche une note si l'IA est indisponible.
-
-## [Non publié]
-
-### À venir
-- Vocaux, partage depuis WhatsApp, déploiement du serveur (voir [feuille de route](docs/07_ROADMAP.md)).
 
 ## [0.1.1] — Correctifs du lot 1
 
