@@ -12,6 +12,10 @@ class AdviceSimilarityPolicy {
 
   static const int _minimumMeaningfulWordLength = 3;
 
+  // With fewer meaningful words, a "same meaning" guess is too weak: only an
+  // identical text counts as a repeat.
+  static const int _minimumWordCountForComparison = 2;
+
   // Common small words carry no meaning for this comparison.
   static const Set<String> _ignoredWords = <String>{
     'les', 'des', 'une', 'ces', 'cette', 'aux', 'dans', 'pour',
@@ -48,23 +52,20 @@ class AdviceSimilarityPolicy {
         return true;
       }
 
-      // Guard clause: without meaningful words we cannot compare by meaning.
-      if (candidateWords.isEmpty) {
-        continue;
-      }
-
       final Set<String> existingWords =
           _extractMeaningfulWords(normalizedExisting);
+      final int shorterWordCount = candidateWords.length < existingWords.length
+          ? candidateWords.length
+          : existingWords.length;
 
-      if (existingWords.isEmpty) {
+      // Guard clause: too few words to compare by meaning (also avoids a
+      // division by zero below).
+      if (shorterWordCount < _minimumWordCountForComparison) {
         continue;
       }
 
       final int sharedWordCount =
           candidateWords.intersection(existingWords).length;
-      final int shorterWordCount = candidateWords.length < existingWords.length
-          ? candidateWords.length
-          : existingWords.length;
 
       if (sharedWordCount / shorterWordCount >= _similarityThreshold) {
         return true;
@@ -78,7 +79,10 @@ class AdviceSimilarityPolicy {
     final Set<String> meaningfulWords = <String>{};
 
     for (final String word in normalizedText.split(_wordSeparatorPattern)) {
-      if (word.length < _minimumMeaningfulWordLength) {
+      // Numbers always matter, even when they are short ("1" is not "2").
+      final bool isNumber = int.tryParse(word) != null;
+
+      if (word.length < _minimumMeaningfulWordLength && !isNumber) {
         continue;
       }
 
