@@ -8,7 +8,10 @@ internet and without a real key.
 from __future__ import annotations
 
 import base64
+import logging
+import time
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol
@@ -17,6 +20,15 @@ from .config import Settings
 from .prompts import SYSTEM_INSTRUCTION
 
 _BLOCKING_FINISH_REASONS = ("SAFETY", "PROHIBITED_CONTENT", "BLOCKLIST", "SPII", "RECITATION")
+
+# The mobile app gives up after 40 seconds. The server must answer before that,
+# even when it has to try two models one after the other.
+_TOTAL_DEADLINE_SECONDS = 36.0
+
+# A new attempt with less time than this would only fail by timeout.
+_MINIMUM_SECONDS_FOR_ANOTHER_ATTEMPT = 5.0
+
+_LOGGER = logging.getLogger("radar.backend")
 
 
 class AiProviderErrorKind(str, Enum):
@@ -102,9 +114,17 @@ class HttpxJsonTransport:
 
 
 class GemmaGeminiProvider(AiProvider):
-    def __init__(self, *, settings: Settings, transport: HttpJsonTransport) -> None:
+    def __init__(
+        self,
+        *,
+        settings: Settings,
+        transport: HttpJsonTransport,
+        clock: Callable[[], float] = time.monotonic,
+    ) -> None:
         self._settings = settings
         self._transport = transport
+        # The clock can be replaced in tests, so the time budget can be checked without waiting.
+        self._clock = clock
 
     async def generate_verdict(self, *, user_prompt: str, image: ImagePayload | None) -> ProviderOutput:
         if not self._settings.is_ai_configured:
@@ -116,10 +136,19 @@ class GemmaGeminiProvider(AiProvider):
             model_names.append(self._settings.fallback_model_name)
 
         last_recoverable_error: AiProviderError | None = None
+        started_at = self._clock()
 
         for model_name in model_names:
+            seconds_left = _TOTAL_DEADLINE_SECONDS - (self._clock() - started_at)
+
+            # Guard clause: do not start a second attempt that cannot finish in time.
+            if last_recoverable_error is not None and seconds_left < _MINIMUM_SECONDS_FOR_ANOTHER_ATTEMPT:
+                break
+
+            timeout_seconds = min(self._settings.request_timeout_seconds, seconds_left)
+
             try:
-                return await self._call_model(model_name, user_prompt, image)
+                return await self._call_model(model_name, user_prompt, image, timeout_seconds)
             except AiProviderError as error:
                 # Another model has its own quota, so it can help for these two cases only.
                 if error.kind not in (AiProviderErrorKind.RATE_LIMITED, AiProviderErrorKind.UNAVAILABLE):
@@ -161,29 +190,47 @@ class GemmaGeminiProvider(AiProvider):
             "generationConfig": generation_config,
         }
 
-    async def _call_model(self, model_name: str, user_prompt: str, image: ImagePayload | None) -> ProviderOutput:
+    async def _call_model(
+        self, model_name: str, user_prompt: str, image: ImagePayload | None, timeout_seconds: float
+    ) -> ProviderOutput:
         url = f"{self._settings.api_base_url}/models/{model_name}:generateContent"
         headers = {
             "x-goog-api-key": self._settings.gemini_api_key,
             "Content-Type": "application/json",
         }
+        call_started_at = self._clock()
+        status_code: int | str = "no_response"
 
         try:
-            response = await self._transport.post_json(
-                url=url,
-                headers=headers,
-                payload=self._build_payload(user_prompt, image),
-                timeout_seconds=self._settings.request_timeout_seconds,
+            try:
+                response = await self._transport.post_json(
+                    url=url,
+                    headers=headers,
+                    payload=self._build_payload(user_prompt, image),
+                    timeout_seconds=timeout_seconds,
+                )
+            except HttpTransportError as error:
+                raise AiProviderError(AiProviderErrorKind.UNAVAILABLE, "The AI service cannot be reached.") from error
+
+            status_code = response.status_code
+            self._raise_for_status(response.status_code)
+
+            if response.body is None:
+                raise AiProviderError(AiProviderErrorKind.INVALID_RESPONSE, "The AI service sent an unreadable answer.")
+
+            return self._extract_output(response.body, model_name)
+        except AiProviderError as error:
+            # Only technical facts are logged. The message or image content is never logged.
+            _LOGGER.warning(
+                "ai_call_failed model=%s kind=%s status=%s timeout_s=%.0f elapsed_ms=%d image_bytes=%s",
+                model_name,
+                error.kind.value,
+                status_code,
+                timeout_seconds,
+                int((self._clock() - call_started_at) * 1000),
+                len(image.image_bytes) if image is not None else 0,
             )
-        except HttpTransportError as error:
-            raise AiProviderError(AiProviderErrorKind.UNAVAILABLE, "The AI service cannot be reached.") from error
-
-        self._raise_for_status(response.status_code)
-
-        if response.body is None:
-            raise AiProviderError(AiProviderErrorKind.INVALID_RESPONSE, "The AI service sent an unreadable answer.")
-
-        return self._extract_output(response.body, model_name)
+            raise
 
     @staticmethod
     def _raise_for_status(status_code: int) -> None:
