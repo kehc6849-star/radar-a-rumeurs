@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import unittest
 
 from app.ai_provider import (
@@ -168,3 +169,75 @@ class GemmaGeminiProviderTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FakeClock:
+    """A clock that moves only when a test says so, so no test has to wait."""
+
+    def __init__(self) -> None:
+        self.current_seconds = 0.0
+
+    def __call__(self) -> float:
+        return self.current_seconds
+
+
+class SlowFailingTransport(FakeTransport):
+    """Like FakeTransport, but each call makes the fake clock move forward."""
+
+    def __init__(self, answers: list, clock: FakeClock, seconds_per_call: float) -> None:
+        super().__init__(answers)
+        self._clock = clock
+        self._seconds_per_call = seconds_per_call
+        self.timeouts: list[float] = []
+
+    async def post_json(self, *, url: str, headers: dict, payload: dict, timeout_seconds: float) -> HttpJsonResponse:
+        self.timeouts.append(timeout_seconds)
+        self._clock.current_seconds += self._seconds_per_call
+        return await super().post_json(url=url, headers=headers, payload=payload, timeout_seconds=timeout_seconds)
+
+
+class GemmaGeminiProviderTimeBudgetTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.settings = Settings(gemini_api_key="test-key")
+        self.clock = FakeClock()
+
+    def test_second_model_gets_only_the_time_that_is_left(self) -> None:
+        transport = SlowFailingTransport(
+            [HttpJsonResponse(500, None), HttpJsonResponse(200, build_success_body("{}"))],
+            self.clock,
+            seconds_per_call=20.0,
+        )
+        provider = GemmaGeminiProvider(settings=self.settings, transport=transport, clock=self.clock)
+
+        output = run(provider.generate_verdict(user_prompt="hello", image=None))
+
+        self.assertEqual(output.model_name, "gemma-4-31b-it")
+        self.assertEqual(transport.timeouts[0], 30.0)
+        self.assertAlmostEqual(transport.timeouts[1], 16.0)
+
+    def test_no_second_attempt_when_the_budget_is_almost_used(self) -> None:
+        transport = SlowFailingTransport([HttpTransportError("timeout")], self.clock, seconds_per_call=33.0)
+        provider = GemmaGeminiProvider(settings=self.settings, transport=transport, clock=self.clock)
+
+        with self.assertRaises(AiProviderError) as context:
+            run(provider.generate_verdict(user_prompt="hello", image=None))
+
+        self.assertEqual(context.exception.kind, AiProviderErrorKind.UNAVAILABLE)
+        self.assertEqual(len(transport.requests), 1)
+
+    def test_failure_is_logged_with_technical_facts_only(self) -> None:
+        transport = SlowFailingTransport(
+            [HttpJsonResponse(500, None), HttpJsonResponse(500, None)], self.clock, seconds_per_call=1.0
+        )
+        provider = GemmaGeminiProvider(settings=self.settings, transport=transport, clock=self.clock)
+        secret_message = "very-private-message-text"
+
+        with self.assertLogs("radar.backend", level=logging.WARNING) as captured:
+            with self.assertRaises(AiProviderError):
+                run(provider.generate_verdict(user_prompt=secret_message, image=None))
+
+        all_lines = "\n".join(captured.output)
+        self.assertIn("model=gemma-4-26b-a4b-it", all_lines)
+        self.assertIn("model=gemma-4-31b-it", all_lines)
+        self.assertIn("status=500", all_lines)
+        self.assertNotIn(secret_message, all_lines)
