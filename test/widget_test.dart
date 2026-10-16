@@ -9,6 +9,16 @@ const BackendConfiguration _unreachableServer = BackendConfiguration(
   accessToken: '',
 );
 
+void _useTallScreen(WidgetTester tester) {
+  // The home screen is a lazy list. On a short screen, the analyze button is
+  // not built at all, so the test could not find it.
+  tester.view.physicalSize = const Size(800, 4000);
+  tester.view.devicePixelRatio = 1.0;
+
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
+
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
@@ -17,6 +27,8 @@ void main() {
   testWidgets('analyzes a suspicious message and shows the verdict', (
     WidgetTester tester,
   ) async {
+    _useTallScreen(tester);
+
     await tester.pumpWidget(const RadarApplication());
 
     expect(find.text('Analyser le message'), findsOneWidget);
@@ -37,6 +49,8 @@ void main() {
   testWidgets('shows an error when the message is empty', (
     WidgetTester tester,
   ) async {
+    _useTallScreen(tester);
+
     await tester.pumpWidget(const RadarApplication());
 
     await tester.ensureVisible(find.text('Analyser le message'));

@@ -76,7 +76,7 @@ class VerdictScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: _navy.withOpacity(0.04),
+                    color: _navy.withValues(alpha: 0.04),
                     blurRadius: 18,
                     offset: const Offset(0, 6),
                   ),
@@ -306,7 +306,7 @@ class VerdictScreen extends StatelessWidget {
                   backgroundColor: _blue,
                   foregroundColor: Colors.white,
                   elevation: 2,
-                  shadowColor: _blue.withOpacity(0.2),
+                  shadowColor: _blue.withValues(alpha: 0.2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
