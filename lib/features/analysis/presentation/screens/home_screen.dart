@@ -270,6 +270,12 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    await _returnToHomeScreen();
+
+    if (!mounted) {
+      return;
+    }
+
     if (sharedContent is SharedTextContent) {
       await _analyzeSharedText(sharedContent.text);
       return;
@@ -278,6 +284,27 @@ class _HomeScreenState extends State<HomeScreen> {
     if (sharedContent is SharedScreenshotContent) {
       await _analyzeSharedScreenshot(sharedContent.screenshot);
     }
+  }
+
+  // The user can be on the result screen (or the history) when a content is
+  // shared. Going back to the home screen first shows the progress of the new
+  // analysis and avoids two result screens on top of each other.
+  Future<void> _returnToHomeScreen() async {
+    final ModalRoute<Object?>? homeRoute = ModalRoute.of(context);
+
+    // Guard clause: nothing is above the home screen.
+    if (homeRoute == null || homeRoute.isCurrent) {
+      return;
+    }
+
+    // A dialog or a bottom sheet stops here: a share must not close it.
+    Navigator.of(context).popUntil(
+      (Route<dynamic> route) => route.isFirst || route is PopupRoute<dynamic>,
+    );
+
+    // The closed screen finishes its own cleanup (it clears the text and the
+    // analysis) before the new analysis starts.
+    await Future<void>.delayed(Duration.zero);
   }
 
   Future<void> _analyzeSharedText(String sharedText) {
