@@ -48,7 +48,7 @@ Les conditions du fournisseur s'appliquent aux données qu'il reçoit. **Sur l'o
 
 ## Limites
 
-- Radar à Rumeurs fournit une **estimation**, pas une preuve.
+- Zero Trust fournit une **estimation**, pas une preuve.
 - Le jeton d'accès contenu dans l'application peut être extrait par quelqu'un de motivé.
 - Le cache et les limites de débit sont en mémoire : ils sont remis à zéro au redémarrage du serveur.
 - La communication entre l'application et le serveur doit se faire en **HTTPS** en dehors des essais locaux.

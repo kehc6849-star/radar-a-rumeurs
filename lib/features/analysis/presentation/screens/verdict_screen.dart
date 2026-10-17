@@ -318,7 +318,7 @@ class VerdictScreen extends StatelessWidget {
 
             Center(
               child: Text(
-                'RADAR À RUMEURS • VÉRIFIER AVANT DE PARTAGER',
+                'ZERO TRUST • VÉRIFIER AVANT DE PARTAGER',
                 textAlign: TextAlign.center,
                 style: textTheme.labelSmall?.copyWith(
                   color: _muted,

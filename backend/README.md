@@ -1,4 +1,4 @@
-# Backend de Radar à Rumeurs
+# Backend de Zero Trust
 
 Petit serveur (FastAPI) qui garde la clé d'API côté serveur et interroge **Gemma 4** via l'API Gemini.
 
