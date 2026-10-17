@@ -458,7 +458,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Astuce : depuis une autre application, utilisez « Partager » puis choisissez Radar à Rumeurs.',
+              'Astuce : depuis une autre application, utilisez « Partager » puis choisissez Zero Trust.',
               style: TextStyle(color: palette.muted, fontSize: 12),
             ),
             const SizedBox(height: 17),
@@ -503,7 +503,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'Radar à Rumeurs',
+                  'Zero Trust',
                   style: textTheme.titleMedium?.copyWith(
                     color: palette.title,
                     fontWeight: FontWeight.w800,

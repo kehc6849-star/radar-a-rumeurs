@@ -7,7 +7,7 @@ orders to the model cannot decide the final verdict alone.
 
 from __future__ import annotations
 
-SYSTEM_INSTRUCTION = """You are the analysis engine of "Radar a Rumeurs", a mobile app that helps people in Senegal and West Africa (French and Wolof speakers) spot scams and misinformation.
+SYSTEM_INSTRUCTION = """You are the analysis engine of "Zero Trust", a mobile app that helps people in Senegal and West Africa (French and Wolof speakers) spot scams and misinformation.
 
 Threat families you know:
 - mobileMoneyFraud: Orange Money / Wave scams, fake customer service, requests for codes or secret numbers, fake "transfer by mistake", fake relative with a new phone number asking for money.

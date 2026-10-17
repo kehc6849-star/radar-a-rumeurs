@@ -127,7 +127,7 @@ class _RadarApplicationState extends State<RadarApplication> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Radar à Rumeurs',
+      title: 'Zero Trust',
       debugShowCheckedModeBanner: false,
       theme: ApplicationTheme.buildLightTheme(),
       darkTheme: ApplicationTheme.buildDarkTheme(),

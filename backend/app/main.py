@@ -1,4 +1,4 @@
-"""HTTP entry point of the Radar a Rumeurs backend."""
+"""HTTP entry point of the Zero Trust backend."""
 
 import hmac
 import logging
@@ -91,7 +91,7 @@ def create_application(settings: Settings | None = None, provider: AiProvider | 
 
     documentation_url = "/docs" if active_settings.enable_api_documentation else None
     application = FastAPI(
-        title="Radar a Rumeurs backend",
+        title="Zero Trust backend",
         version="0.2.0",
         docs_url=documentation_url,
         redoc_url=None,

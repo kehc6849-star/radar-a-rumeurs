@@ -26,6 +26,6 @@
 
 - La licence couvre **le code source du dépôt public** (pas l'événement).
 - Le fichier `LICENSE` est à la racine du dépôt. Il est mentionné dans le README.
-- Le titulaire du droit d'auteur indiqué est actuellement « Radar à Rumeurs contributors ». Il peut être remplacé par le nom du ou des auteurs.
+- Le titulaire du droit d'auteur indiqué est actuellement « Zero Trust Contributors ». Il peut être remplacé par le nom du ou des auteurs.
 - Alternatives considérées : Apache-2.0 (permissive avec clause explicite sur les brevets) ; GPL ou AGPL (obligent à partager les modifications).
 - Cette note n'est pas un avis juridique.

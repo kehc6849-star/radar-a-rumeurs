@@ -14,7 +14,7 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Les
 - Conseils affichés : l'application ne montre plus deux fois le même conseil lorsque l'IA reprend, avec d'autres mots, un conseil des règles locales (comparaison des mots importants dans `advice_similarity_policy.dart`, utilisée par la fusion des verdicts).
 
 ### Modifié
-- Nom de l'application : le nom affiché sous l'icône Android devient « Zero Trust » (nom définitif choisi le 16 octobre 2026 ; le renommage du reste du projet suit).
+- Nom de l'application : « Zero Trust » est le nom définitif (choisi le 16 octobre 2026) : étiquette Android, titre et textes de l'application, titre et prompt du serveur, documentation. Les identifiants techniques (paquet Dart, dossier, en-tête HTTP) gardent leur ancien nom.
 - Documentation des quotas (`docs/11`) : cas de l'hébergement Render (endormissement, cache vidé), plan de secours par câble USB, journal des incidents.
 - Serveur : le prompt envoyé à Gemma 4 contient quatre nouvelles règles de style (`backend/app/prompts.py`), et le texte du verdict est nettoyé par le code (`backend/app/verdict_parser.py`) : guillemets français avec espaces insécables, signaux et conseils en double supprimés. Le texte lu dans une capture n'est jamais modifié.
 - `.gitignore` : ajout des caches Python (`__pycache__/`, `.pytest_cache/`) et de l'environnement virtuel (`.venv/`).
@@ -26,7 +26,7 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Les
 - Après les correctifs du 15 octobre : guillemets français, « transféré » et conseils sans répétition vérifiés sur téléphone ; `flutter analyze` sans problème, 68 tests Flutter et 58 tests serveur réussis.
 
 ### À venir
-- Renommage complet de l'application en « Zero Trust » (textes de l'application, documentation, serveur), fiabilisation de l'analyse des captures, relevé des quotas du compte Gemma, APK release pour la démonstration, partage depuis WhatsApp si le temps le permet (voir [feuille de route](docs/07_ROADMAP.md)).
+- Fiabilisation de l'analyse des captures, relevé des quotas du compte Gemma, APK release pour la démonstration, partage depuis WhatsApp si le temps le permet (voir [feuille de route](docs/07_ROADMAP.md)).
 - Hors périmètre de la version 1.0 (décisions du 16 octobre 2026) : messages vocaux (l'analyse audio n'est pas confirmée par l'API) et hébergement GPU Brev.
 
 ## [0.2.0] — Lot 2 : IA Gemma 4
