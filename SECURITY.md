@@ -11,4 +11,4 @@ Si vous trouvez une faille de sécurité, **ne la publiez pas dans une issue pub
 
 ## Rappel important
 
-Radar à Rumeurs fournit une **estimation**, pas une preuve. Il ne remplace pas la vérification auprès de la source officielle.
+Zero Trust fournit une **estimation**, pas une preuve. Il ne remplace pas la vérification auprès de la source officielle.

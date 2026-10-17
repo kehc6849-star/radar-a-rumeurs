@@ -1,6 +1,6 @@
-# 📡 Radar à Rumeurs
+# 📡 Zero Trust
 
-> **English summary** — Radar à Rumeurs is an open source Flutter app that helps people in Senegal and West Africa spot scams (mobile money, fake scholarships, phishing) and rumors before they act or share. Paste a message, get a clear verdict, the warning signs found, and what to do next. Released under the MIT licence.
+> **English summary** — Zero Trust is an open source Flutter app that helps people in Senegal and West Africa spot scams (mobile money, fake scholarships, phishing) and rumors before they act or share. Paste a message, get a clear verdict, the warning signs found, and what to do next. Released under the MIT licence.
 
 Application mobile **open source** (Flutter, IA Gemma 4) qui aide à repérer les **arnaques** (mobile money, fausses bourses, phishing) et les **rumeurs** avant d'agir ou de partager.
 
