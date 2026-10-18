@@ -1,6 +1,6 @@
 # 📡 Zero Trust
 
-> **English summary** — Zero Trust is an open source Flutter app that helps people in Senegal and West Africa spot scams (mobile money, fake scholarships, phishing) and rumors before they act or share. Paste a message, get a clear verdict, the warning signs found, and what to do next. Released under the MIT licence.
+> **English summary** — Zero Trust is an open source Flutter app that helps people in Senegal and West Africa spot scams (mobile money, fake scholarships, phishing) and rumors before they act or share. Paste a message, or share a text or a screenshot from another app, and get a clear verdict, the warning signs found, and what to do next. Released under the MIT licence.
 
 Application mobile **open source** (Flutter, IA Gemma 4) qui aide à repérer les **arnaques** (mobile money, fausses bourses, phishing) et les **rumeurs** avant d'agir ou de partager.
 
@@ -12,7 +12,7 @@ Au Sénégal et en Afrique de l'Ouest, les arnaques par SMS, appels et messages 
 
 ## Ce que fait l'application
 
-L'utilisateur colle un message. L'application renvoie :
+L'utilisateur colle un message, ou **partage depuis une autre application** (Photos, WhatsApp, navigateur…) un texte ou une capture d'écran : l'analyse démarre directement. L'application renvoie :
 
 - un **verdict** : *aucun signal détecté*, *douteux* ou *dangereux* (jamais « sûr » : l'absence de signal ne prouve rien) ;
 - les **signaux repérés**, expliqués simplement ;
@@ -28,8 +28,11 @@ Sans l'IA, le texte reste sur le téléphone. Avec l'IA (facultative, après acc
 | Analyse de captures d'écran (lecture par IA, Gemma 4) | ✅ Disponible |
 | Analyse du sens par IA (Gemma 4) avec repli hors-ligne | ✅ Disponible |
 | Historique local (sans le contenu analysé) | ✅ Disponible |
-| Analyse de vocaux (transcription) | 🔜 Prévu |
-| Partage direct depuis WhatsApp, historique local | 🔜 Prévu |
+| Partage depuis une autre application (image ou texte, menu « Partager » et menu de sélection de texte) | ✅ Disponible (Android) |
+| Interface avec mode sombre | ✅ Disponible |
+| Serveur d'analyse en ligne (HTTPS) pour la démonstration | ✅ Disponible |
+| Partage direct d'un texte depuis WhatsApp | 🔜 Après la version 1.0 (aujourd'hui : copier le texte, puis le coller) |
+| Analyse de vocaux (transcription) | ❌ Hors périmètre de la version 1.0 (l'analyse audio n'est pas confirmée par l'API) |
 
 Le détail est dans la [feuille de route](docs/07_ROADMAP.md) et le [journal des modifications](CHANGELOG.md).
 
@@ -43,6 +46,15 @@ cd radar-a-rumeurs
 flutter pub get
 flutter run
 ```
+
+Pour obtenir l'analyse par IA, l'application doit connaître l'adresse du serveur d'analyse :
+
+```bash
+flutter run --dart-define=BACKEND_BASE_URL=https://<adresse-du-serveur>
+flutter build apk --release --dart-define=BACKEND_BASE_URL=https://<adresse-du-serveur>
+```
+
+Sans cette adresse, l'application reste utilisable, avec les seules règles locales.
 
 Contrôles qualité : `flutter analyze` (zéro avertissement) et `flutter test`.
 
