@@ -2,7 +2,7 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Les versions les plus récentes sont en haut.
 
-## [Non publié]
+## [1.0.0] — 18 Octobre 21:42
 
 ### Ajouté
 - Partage depuis une autre application (Android) : une image envoyée par le menu « Partager » (par exemple depuis Photos ou WhatsApp), ou un texte sélectionné puis envoyé à « Zero Trust » depuis le menu de sélection de texte (testé dans Chrome) ou par « Partager », ouvre l'application et lance directement l'analyse, avec le même accord IA qu'un texte collé. Si un écran de résultat est déjà ouvert, l'application revient d'abord à l'accueil, montre la progression, puis affiche un seul écran de résultat ; le bouton Retour ramène à l'accueil. Les images sont réduites à 1600 px (JPEG) avant l'envoi ; un texte vide ou de plus de 5000 caractères, ou une image de plus de 4 Mo ou d'un format inconnu, est refusé avec un message clair. Lecture faite côté Android sans nouvelle dépendance (`MainActivity.kt`, `android_shared_content_receiver.dart`). 20 tests ajoutés.
