@@ -1,16 +1,22 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radar_a_rumeurs/app/radar_application.dart';
 import 'package:radar_a_rumeurs/core/configuration/backend_configuration.dart';
 import 'package:radar_a_rumeurs/features/analysis/domain/models/screenshot_input.dart';
 import 'package:radar_a_rumeurs/features/analysis/domain/models/shared_content.dart';
 import 'package:radar_a_rumeurs/features/analysis/domain/services/shared_content_receiver.dart';
+import 'package:radar_a_rumeurs/features/analysis/presentation/screens/home_screen.dart';
+import 'package:radar_a_rumeurs/features/analysis/presentation/screens/verdict_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String _suspiciousMessage =
     'Je vous ai envoyé 25 000 FCFA par erreur, merci de me les renvoyer.';
+
+const String _secondSuspiciousMessage =
+    'Félicitations ! Vous avez gagné 500 000 FCFA. Envoyez votre code secret pour recevoir votre prix.';
 
 const BackendConfiguration _unreachableServer = BackendConfiguration(
   baseUrl: 'http://127.0.0.1:9',
@@ -58,6 +64,23 @@ SharedScreenshotContent _buildSharedImage() {
   return SharedScreenshotContent(
     ScreenshotInput(imageBytes: imageBytes, mimeType: 'image/jpeg'),
   );
+}
+
+// Opens the result screen by sharing a first text, as when the app was closed.
+Future<_FakeSharedContentReceiver> _pumpAppOnResultScreen(
+  WidgetTester tester,
+) async {
+  final _FakeSharedContentReceiver receiver = _FakeSharedContentReceiver(
+    initialContent: const SharedTextContent(_suspiciousMessage),
+  );
+  addTearDown(receiver.close);
+
+  await tester.pumpWidget(RadarApplication(sharedContentReceiver: receiver));
+  await tester.pumpAndSettle();
+
+  expect(find.byType(VerdictScreen), findsOneWidget);
+
+  return receiver;
 }
 
 void main() {
@@ -163,5 +186,35 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets(
+    'keeps one result screen when a text is shared on the result screen',
+    (WidgetTester tester) async {
+      final _FakeSharedContentReceiver receiver =
+          await _pumpAppOnResultScreen(tester);
+
+      receiver.shareWhileOpen(const SharedTextContent(_secondSuspiciousMessage));
+      await tester.pumpAndSettle();
+
+      // Offstage screens are counted too: the old result must be really removed.
+      expect(find.byType(VerdictScreen, skipOffstage: false), findsOneWidget);
+    },
+  );
+
+  testWidgets('goes back to the home screen from the new result', (
+    WidgetTester tester,
+  ) async {
+    final _FakeSharedContentReceiver receiver =
+        await _pumpAppOnResultScreen(tester);
+
+    receiver.shareWhileOpen(const SharedTextContent(_secondSuspiciousMessage));
+    await tester.pumpAndSettle();
+
+    Navigator.of(tester.element(find.byType(VerdictScreen))).pop();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(VerdictScreen, skipOffstage: false), findsNothing);
+    expect(find.byType(HomeScreen), findsOneWidget);
   });
 }
